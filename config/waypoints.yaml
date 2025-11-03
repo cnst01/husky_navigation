@@ -1,0 +1,11 @@
+waypoints:
+  frame_id: "map"
+  poses: [
+    {position: {x: 2.0, y: 13.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}},
+    {position: {x: 1.0, y: 21.0, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.707, w: 0.707}},
+    {position: {x: -8.0, y: 1.4, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 1.0, w: 0.0}}
+  ]
+
+navigation:
+  timeout: 300.0
+  waypoint_tolerance: 0.5

@@ -1,0 +1,17 @@
+# Build / ROS artifacts
+build/
+install/
+log/
+*.pyc
+__pycache__/
+*.egg-info/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Python envs
+.venv/
+env/
+venv/
