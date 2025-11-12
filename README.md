@@ -1,8 +1,8 @@
-husky_navigation
+## husky_navigation
 
-Pacote ROS 2 para navegação do Husky (Demos Nav2, máquina de estados de waypoints).
+### Pacote ROS 2 para navegação do Husky (Demos Nav2, máquina de estados de waypoints).
 
-Pré-requisitos e Instalação
+## Pré-requisitos e Instalação
 
 Para que este pacote funcione, o ambiente de simulação do Clearpath para ROS 2 Jazzy deve estar corretamente instalado e configurado.
 
@@ -10,15 +10,15 @@ Configuração do Computador (Offboard PC):
 
 Siga o guia oficial para instalar o ROS 2 Jazzy e as ferramentas essenciais.
 
-Link: https://docs.clearpathrobotics.com/docs/ros/installation/offboard_pc/
+### Link: https://docs.clearpathrobotics.com/docs/ros/installation/offboard_pc/
 
 Instalação do Simulador Clearpath:
 
 Siga o guia oficial para instalar o Gazebo e o meta-pacote ros-jazzy-clearpath-simulator. Recomenda-se a instalação via Source Install (Item 4) se você planeja adicionar mundos customizados.
 
-Link: https://docs.clearpathrobotics.com/docs/ros/tutorials/simulator/install/
+### Link: https://docs.clearpathrobotics.com/docs/ros/tutorials/simulator/install/
 
-Configuração do Robô (robot.yaml):
+## Configuração do Robô (robot.yaml):
 
 Certifique-se de que seu arquivo $HOME/clearpath/robot.yaml (ou /etc/clearpath/robot.yaml) está configurado para o robô desejado (ex: a200_0000).
 
@@ -26,25 +26,25 @@ Build (Compilação)
 
 Este pacote deve ser compilado dentro do mesmo workspace onde o simulador (via Source Install) foi instalado (ex: clearpath_ws).
 
-# Navegue até a raiz do workspace
+### Navegue até a raiz do workspace
 cd ~/clearpath_ws
 
-# Compile o workspace (incluindo este pacote)
+### Compile o workspace (incluindo este pacote)
 colcon build --symlink-install
 
 
-Como Usar (Workflows)
+## Como Usar (Workflows)
 
 Existem dois modos principais de operação: Mapeamento (para criar mapas) e Navegação (para seguir rotas).
 
-Workflow A: Mapeamento (Gerar um novo mapa com SLAM)
+### Workflow A: Mapeamento (Gerar um novo mapa com SLAM)
 
 Use este workflow para mapear um novo ambiente.
 
 1. Lance a Simulação (Gazebo):
 (Em um novo terminal)
 
-# Lance o Gazebo com RViz (substitua 'warehouse' pelo seu mundo)
+### Lance o Gazebo com RViz (substitua 'warehouse' pelo seu mundo)
 ros2 launch clearpath_gz simulation.launch.py world:=warehouse rviz:=true
 
 
@@ -83,14 +83,14 @@ cd ~/clearpath_ws
 colcon build --packages-select husky_navigation
 
 
-Workflow B: Navegação (Usar um mapa existente)
+### Workflow B: Navegação (Usar um mapa existente)
 
 Use este workflow para carregar um mapa pré-construído e navegar com o waypoint_state_machine.
 
 1. Lance a Simulação (Gazebo):
 (Em um novo terminal)
 
-# Lance o Gazebo
+### Lance o Gazebo
 ros2 launch clearpath_gz simulation.launch.py world:=warehouse rviz:=true
 
 
@@ -98,14 +98,14 @@ ros2 launch clearpath_gz simulation.launch.py world:=warehouse rviz:=true
 (Em um novo terminal)
 Este launch file (nav2_husky.launch.py) agora aceita um argumento map para carregar mapas customizados.
 
-# --- OPÇÃO 1 (Padrão): Usar o mapa 'warehouse.yaml' (dos demos) ---
+### --- OPÇÃO 1 (Padrão): Usar o mapa 'warehouse.yaml' (dos demos) ---
 ros2 launch husky_navigation nav2_husky.launch.py
 
-# --- OPÇÃO 2 (Exemplo): Usar o mapa 'office_map.yaml' (deste pacote) ---
+### --- OPÇÃO 2 (Exemplo): Usar o mapa 'office_map.yaml' (deste pacote) ---
 ros2 launch husky_navigation nav2_husky.launch.py map:='$(find-pkg-share husky_navigation)/maps/office_map.yaml'
 
-# --- OPÇÃO 3 (Customizado): Usar o seu 'meu_mapa.yaml' ---
-# (Assumindo que você seguiu os passos da seção "Adicionando Novos Mapas ao Pacote")
+### --- OPÇÃO 3 (Customizado): Usar o seu 'meu_mapa.yaml' ---
+(Assumindo que você seguiu os passos da seção "Adicionando Novos Mapas ao Pacote")
 ros2 launch husky_navigation nav2_husky.launch.py map:='$(find-pkg-share husky_navigation)/maps/meu_mapa.yaml'
 
 
