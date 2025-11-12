@@ -30,4 +30,11 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# Instalar o diretório de mapas
+install(DIRECTORY
+  launch
+  maps
+  DESTINATION share/${PROJECT_NAME}
+)
+
 ament_package()

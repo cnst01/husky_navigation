@@ -6,7 +6,7 @@ from launch_ros.substitutions import FindPackageShare
 import os
 
 def generate_launch_description():
-    # --- Argumentos de Launch Originais ---
+    # Argumentos de launch
     namespace_arg = DeclareLaunchArgument(
         'namespace',
         default_value='a200_0000',
@@ -24,22 +24,6 @@ def generate_launch_description():
         default_value=os.path.expanduser('~/clearpath/'),
         description='Path to setup files'
     )
-    
-    # --- NOVO ARGUMENTO PARA O MAPA ---
-    # Adicionamos um argumento 'map'
-    # O valor padrão aponta para o mapa 'warehouse.yaml' do pacote de demos,
-    # mantendo o comportamento original se nenhum mapa for passado.
-    map_arg = DeclareLaunchArgument(
-        'map',
-        default_value=PathJoinSubstitution([
-            FindPackageShare('clearpath_nav2_demos'),
-            'maps',
-            'warehouse.yaml'
-        ]),
-        description='Full path to map file to load'
-    )
-    
-    # --- Inclusões de Launch Files ---
     
     # Incluir view_navigation.launch.py
     view_navigation_launch = IncludeLaunchDescription(
@@ -66,8 +50,7 @@ def generate_launch_description():
         ]),
         launch_arguments={
             'setup_path': LaunchConfiguration('setup_path'),
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-            'map': LaunchConfiguration('map')  # <-- Passamos o argumento do mapa
+            'use_sim_time': LaunchConfiguration('use_sim_time')
         }.items()
     )
     
@@ -82,18 +65,14 @@ def generate_launch_description():
         ]),
         launch_arguments={
             'setup_path': LaunchConfiguration('setup_path'),
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-            'map': LaunchConfiguration('map')  # <-- Passamos o argumento do mapa
+            'use_sim_time': LaunchConfiguration('use_sim_time')
         }.items()
     )
     
-    # --- Lista de Ações de Lançamento ---
     return LaunchDescription([
         namespace_arg,
         use_sim_time_arg,
         setup_path_arg,
-        map_arg,  # <-- Adicionamos o novo argumento à lista
-        
         view_navigation_launch,
         localization_launch,
         nav2_launch
