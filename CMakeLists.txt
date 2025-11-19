@@ -27,6 +27,8 @@ install(PROGRAMS
   scripts/waypoint_state_machine.py
   scripts/get_waypoints_state.py
   scripts/navigate_waypoints_state.py
+  scripts/gps_to_pose.py
+  scripts/gps_to_pose_slam.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

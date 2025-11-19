@@ -1,0 +1,162 @@
+amcl:
+  ros__parameters:
+    use_map_topic: true
+    first_map_only: true
+    set_initial_pose: false
+    
+    # Modelo de movimento para robô diferencial
+    robot_model_type: "differential"
+    
+    # Tolerâncias maiores para GPS
+    alpha1: 0.5
+    alpha2: 0.5
+    alpha3: 0.5
+    alpha4: 0.5
+    
+    # Taxa de atualização
+    update_min_d: 0.2
+    update_min_a: 0.5
+    
+    # Tópicos
+    odom_frame_id: "odom"
+    base_frame_id: "base_link"
+    global_frame_id: "map"
+
+bt_navigator:
+  ros__parameters:
+    global_bt_xml: $(find nav2_bt_navigator)/behavior_trees/navigate_w_replanning_and_recovery.xml
+    local_bt_xml: $(find nav2_bt_navigator)/behavior_trees/follow_point.xml
+    plugin_lib_names:
+      - "nav2_compute_path_to_pose_action_bt_node"
+      - "nav2_follow_path_action_bt_node"
+      - "nav2_back_up_action_bt_node"
+      - "nav2_spin_action_bt_node"
+      - "nav2_wait_action_bt_node"
+      - "nav2_assisted_teleop_action_bt_node"
+      - "nav2_clear_costmap_service_bt_node"
+      - "nav2_is_stuck_condition_bt_node"
+      - "nav2_goal_reached_condition_bt_node"
+      - "nav2_goal_updated_condition_bt_node"
+      - "nav2_globally_updated_goal_condition_bt_node"
+      - "nav2_is_path_valid_condition_bt_node"
+      - "nav2_initial_pose_received_condition_bt_node"
+      - "nav2_reinitialize_global_localization_service_bt_node"
+
+controller_server:
+  ros__parameters:
+    controller_frequency: 10.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+    
+    # Plugin DWB para Husky
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: False
+      min_vel_x: -0.5
+      max_vel_x: 0.5
+      min_vel_y: 0.0
+      max_vel_y: 0.0
+      max_vel_theta: 1.0
+      min_speed_xy: 0.1
+      max_speed_xy: 0.5
+      min_speed_theta: 0.2
+      acc_lim_x: 1.0
+      acc_lim_y: 0.0
+      acc_lim_theta: 1.0
+      decel_lim_x: -1.0
+      decel_lim_y: 0.0
+      decel_lim_theta: -1.0
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 1.0
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: false
+      allow_unknown: true
+
+behavior_server:
+  ros__parameters:
+    behavior_plugins: ["spin", "backup", "assisted_teleop"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+    assisted_teleop:
+      plugin: "nav2_behaviors/AssistedTeleop"
+
+waypoint_follower:
+  ros__parameters:
+    loop_rate: 20
+    stop_on_failure: false
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      width: 6.0
+      height: 6.0
+      resolution: 0.05
+      robot_base_frame: "base_link"
+      use_sim_time: true
+      global_frame: "odom"
+      rolling_window: true
+      plugins: ["voxel_layer", "inflation_layer"]
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: "scan"
+        scan:
+          data_type: "LaserScan"
+          topic: "/scan"
+          marking: true
+          clearing: true
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      width: 50.0
+      height: 50.0
+      resolution: 0.05
+      robot_base_frame: "base_link"
+      use_sim_time: true
+      global_frame: "map"
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_topic: "map"
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: "scan"
+        scan:
+          data_type: "LaserScan"
+          topic: "/scan"
+          marking: true
+          clearing: true
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55

@@ -1,0 +1,43 @@
+slam_toolbox:
+  ros__parameters:
+    # Parâmetros do modo online assíncrono
+    mode: "mapping"
+    
+    # Tópicos
+    scan_topic: "/a200_0000/scan"
+    map_topic: "/map"
+    pose_topic: "/slam_toolbox/pose"
+    
+    # Frames
+    map_frame: "map"
+    odom_frame: "odom" 
+    base_frame: "base_link"
+    
+    # Parâmetros do algoritmo
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.1
+    minimum_travel_heading: 0.1
+    scan_buffer_size: 10
+    scan_buffer_maximum_scan_distance: 5.0
+    link_match_minimum_response_fine: 0.1
+    loop_search_maximum_distance: 5.0
+    do_loop_closing: true
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.1
+    loop_match_minimum_response_fine: 0.1
+    
+    # Parâmetros de otimização
+    use_response_expansion: false
+    
+    # Parâmetros do mapa
+    map_update_interval: 3.0
+    resolution: 0.05
+    max_laser_range: 20.0
+    
+    # Parâmetros de transformada
+    transform_publish_period: 0.02  # 50 Hz
+    
+    # Parâmetros de tempo
+    use_sim_time: true
