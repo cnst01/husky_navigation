@@ -1,0 +1,25 @@
+waypoints:
+  # Mapa: origin=[-13.670, -10.462], resolution=0.050
+  # Robô atual em: (-1.93, 1.11)
+  # Crie waypoints dentro dos limites do mapa
+  # X: -13.670 a ~13 metros, Y: -10.462 a ~13 metros
+  
+  gps_points:
+    # Waypoint 1: um pouco a frente
+    - latitude: -30.000010
+      longitude: -51.000010
+      yaw: 0.0
+    
+    # Waypoint 2: para a esquerda
+    - latitude: -30.000015
+      longitude: -51.000010
+      yaw: 1.57
+    
+    # Waypoint 3: para frente novamente
+    - latitude: -30.000015
+      longitude: -51.000020
+      yaw: 0.0
+
+navigation:
+  timeout: 300.0
+  waypoint_tolerance: 0.5
