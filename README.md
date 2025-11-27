@@ -114,3 +114,112 @@ ros2 launch husky_navigation nav2_husky.launch.py map:='$(find-pkg-share husky_n
 Com a navegação ativa, execute o script de waypoints.
 
 ros2 run husky_navigation waypoint_state_machine.py
+
+
+### Workflow C: Navegação por Coordenadas GPS
+
+Use este workflow para navegar o robô usando coordenadas GPS reais convertidas para o mapa local.
+
+#### Passo 1: Calibração GPS (Primeira Execução)
+
+Antes de usar a navegação por GPS, você precisa calibrar a conversão entre coordenadas GPS e coordenadas do mapa local. Este processo associa um ponto GPS conhecido a uma posição no mapa.
+
+1. Lance a Simulação e o Stack de Navegação (conforme Workflow B):
+
+```bash
+# Terminal 1: Gazebo
+ros2 launch clearpath_gz simulation.launch.py world:=warehouse rviz:=true
+
+# Terminal 2: Nav2
+ros2 launch husky_navigation nav2_husky.launch.py
+```
+
+2. Execute o script de calibração (em um novo terminal):
+
+```bash
+ros2 run husky_navigation gps_calibration.py
+```
+
+3. Em outro terminal, monitore a posição do GPS do robô:
+
+```bash
+ros2 topic echo /a200_0000/sensors/gps_0/fix
+```
+
+4. Posicione o robô em um local conhecido e anote:
+   - **Posição no mapa (do script de calibração)**: ex. `x=-1.93, y=1.11`
+   - **Coordenadas GPS**: ex. `latitude: -30.000012, longitude: -51.000011`
+
+5. Esses valores serão usados como referência na navegação GPS.
+
+#### Passo 2: Configurar Waypoints GPS
+
+Edite o arquivo `config/gps_waypoints.yaml` com seus waypoints:
+
+```yaml
+waypoints:
+  gps_points:
+    - latitude: -30.000010   # Primeira coordenada
+      longitude: -51.000010
+      yaw: 0.0  # Orientação em radianos (opcional)
+    
+    - latitude: -30.000015   # Segunda coordenada
+      longitude: -51.000010
+      yaw: 1.57
+    
+    - latitude: -30.000015   # Terceira coordenada
+      longitude: -51.000020
+      yaw: 0.0
+
+navigation:
+  timeout: 300.0
+  waypoint_tolerance: 0.5
+```
+
+**Dicas:**
+- Diferença de 0.00001° ≈ 1 metro no mapa
+- Use o valor de `yaw` para controlar a orientação do robô (em radianos):
+  - `0.0` = virado para leste
+  - `1.57` ≈ π/2 = virado para norte
+  - `3.14` ≈ π = virado para oeste
+
+#### Passo 3: Executar Navegação GPS
+
+Com o Nav2 em execução, lance o script de navegação GPS (em um novo terminal):
+
+```bash
+# Usar valores de referência padrão (-30.0, -51.0)
+ros2 run husky_navigation navigate_gps_waypoints.py config/gps_waypoints.yaml
+
+# OU especificar coordenadas de referência calibradas
+ros2 run husky_navigation navigate_gps_waypoints.py config/gps_waypoints.yaml \
+  --ref-lat -30.000012 --ref-lon -51.000011
+```
+
+O script:
+1. Carregará os waypoints GPS do arquivo YAML
+2. Converterá as coordenadas GPS para posições no mapa
+3. Enviará o robô para navegar através de todos os waypoints em sequência
+4. Exibirá feedback em tempo real
+
+#### Parâmetros do Script
+
+```
+--ref-lat <latitude>    Latitude de referência (onde mapeia-se ao ponto base)
+--ref-lon <longitude>   Longitude de referência
+--namespace <ns>        Namespace do robô (padrão: a200_0000)
+```
+
+#### Exemplo Prático
+
+```bash
+# 1. Calibração (execute uma vez)
+ros2 run husky_navigation gps_calibration.py
+
+# 2. Editar waypoints em config/gps_waypoints.yaml
+
+# 3. Navegação
+ros2 run husky_navigation navigate_gps_waypoints.py config/gps_waypoints.yaml \
+  --ref-lat -30.000012 --ref-lon -51.000011
+```
+
