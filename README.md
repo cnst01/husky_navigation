@@ -18,6 +18,20 @@ Siga o guia oficial para instalar o Gazebo e o meta-pacote ros-jazzy-clearpath-s
 
 ### Link: https://docs.clearpathrobotics.com/docs/ros/tutorials/simulator/install/
 
+**Tornar o pacote genérico (multiplos robôs)**
+
+Este repositório foi parametrizado para facilitar o uso com diferentes robôs. Você pode definir o namespace do seu robô via a variável de ambiente `ROBOT_NAMESPACE` ou fornecê-lo como parâmetro/argumento quando aplicável. Exemplo:
+
+```bash
+# Exemplo: exportar o namespace antes de executar os scripts
+export ROBOT_NAMESPACE=a200_0000
+
+# Executar o script de navegação GPS (usa ROBOT_NAMESPACE por padrão)
+ros2 run husky_navigation navigate_gps_waypoints.py config/gps_waypoints.yaml
+```
+
+Se não for fornecida a variável `ROBOT_NAMESPACE`, o comportamento padrão permanece `a200_0000`.
+
 ## Configuração do Robô (robot.yaml):
 
 Certifique-se de que seu arquivo $HOME/clearpath/robot.yaml (ou /etc/clearpath/robot.yaml) está configurado para o robô desejado (ex: a200_0000).

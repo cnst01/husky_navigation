@@ -11,7 +11,8 @@ class NavigationDiagnostics(Node):
     def __init__(self):
         super().__init__('navigation_diagnostics')
         
-        self.declare_parameter('namespace', 'a200_0000')
+        import os
+        self.declare_parameter('namespace', os.environ.get('ROBOT_NAMESPACE', 'a200_0000'))
         namespace = self.get_parameter('namespace').value
         
         # Subscrever posição do robô
@@ -54,7 +55,7 @@ class NavigationDiagnostics(Node):
 def main(args=None):
     rclpy.init(args=args)
     
-    namespace = 'a200_0000'
+    namespace = os.environ.get('ROBOT_NAMESPACE', 'a200_0000')
     if len(sys.argv) > 1:
         namespace = sys.argv[1]
     

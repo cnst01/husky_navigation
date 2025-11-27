@@ -10,7 +10,8 @@ class GPSCalibration(Node):
     def __init__(self):
         super().__init__('gps_calibration')
         
-        self.declare_parameter('namespace', 'a200_0000')
+        import os
+        self.declare_parameter('namespace', os.environ.get('ROBOT_NAMESPACE', 'a200_0000'))
         namespace = self.get_parameter('namespace').value
         
         # Subscrever posição do robô

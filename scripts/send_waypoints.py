@@ -7,14 +7,17 @@ from nav2_msgs.action import NavigateThroughPoses
 from geometry_msgs.msg import PoseStamped, Point, Quaternion
 import math
 import sys
+import os
 
 
 class WaypointNavigator(Node):
-    def __init__(self, namespace='a200_0000'):
+    def __init__(self, namespace=None):
         super().__init__('waypoint_navigator')
-        
-        self.namespace = namespace
-        action_name = f'{namespace}/navigate_through_poses'
+
+        # Allow overriding namespace through env var ROBOT_NAMESPACE
+        default_ns = os.environ.get('ROBOT_NAMESPACE', 'a200_0000')
+        self.namespace = namespace if namespace else default_ns
+        action_name = f'{self.namespace}/navigate_through_poses'
         
         self._action_client = ActionClient(self, NavigateThroughPoses, action_name)
         self.get_logger().info(f'Waypoint Navigator inicializado: {action_name}')
@@ -91,7 +94,9 @@ def main(args=None):
         return 1
     
     try:
-        navigator = WaypointNavigator()
+        # resolve namespace from env if provided
+        ns = os.environ.get('ROBOT_NAMESPACE', None)
+        navigator = WaypointNavigator(namespace=ns)
         
         # Parse dos waypoints
         waypoints = []

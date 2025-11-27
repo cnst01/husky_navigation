@@ -7,15 +7,17 @@ from nav2_msgs.action import NavigateToPose
 from geometry_msgs.msg import PoseStamped, Point, Quaternion
 import math
 import sys
+import os
 
 
 class Nav2GoalSender(Node):
-    def __init__(self, namespace='a200_0000'):
+    def __init__(self, namespace=None):
         super().__init__('nav2_goal_sender')
-        
-        self.namespace = namespace
-        action_name = f'{namespace}/navigate_to_pose'
-        
+
+        default_ns = os.environ.get('ROBOT_NAMESPACE', 'a200_0000')
+        self.namespace = namespace if namespace else default_ns
+        action_name = f'{self.namespace}/navigate_to_pose'
+
         self._action_client = ActionClient(self, NavigateToPose, action_name)
         self.get_logger().info(f'Conectado ao servidor: {action_name}')
 
@@ -73,7 +75,9 @@ def main(args=None):
         x, y = sys.argv[1], sys.argv[2]
         yaw = sys.argv[3] if len(sys.argv) > 3 else '0.0'
         
-        goal_sender = Nav2GoalSender()
+        # Respect ROBOT_NAMESPACE env if set
+        ns = os.environ.get('ROBOT_NAMESPACE', None)
+        goal_sender = Nav2GoalSender(namespace=ns)
         
         if goal_sender.send_goal(x, y, yaw):
             rclpy.spin(goal_sender)

@@ -9,8 +9,12 @@ from nav2_msgs.action import NavigateThroughPoses
 class NavigateWaypointsState(ActionState):
     """Estado que executa navegação por waypoints usando Nav2"""
     
-    def __init__(self, namespace='a200_0000'):
-        action_name = f"{namespace}/navigate_through_poses"
+    def __init__(self, namespace=None):
+        # resolve namespace from env if not provided
+        import os
+        default_ns = os.environ.get('ROBOT_NAMESPACE', 'a200_0000')
+        ns = namespace if namespace else default_ns
+        action_name = f"{ns}/navigate_through_poses"
         
         super().__init__(
             NavigateThroughPoses,
