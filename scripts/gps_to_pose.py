@@ -10,9 +10,10 @@ class GpsToPose(Node):
     def __init__(self):
         super().__init__('gps_to_pose')
         
-        # Obter namespace dos parâmetros
+        # Obter namespace dos parâmetros (pode vir de env ROBOT_NAMESPACE)
+        import os
         self.declare_parameter('use_sim_time', True)
-        self.declare_parameter('namespace', 'a200_0000')
+        self.declare_parameter('namespace', os.environ.get('ROBOT_NAMESPACE', 'a200_0000'))
         
         namespace = self.get_parameter('namespace').value
         

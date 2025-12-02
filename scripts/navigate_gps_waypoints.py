@@ -13,11 +13,13 @@ from pathlib import Path
 
 
 class GPSWaypointNavigator(Node):
-    def __init__(self, namespace='a200_0000', reference_lat=-30.0, reference_lon=-51.0):
+    def __init__(self, namespace=None, reference_lat=-30.0, reference_lon=-51.0):
         super().__init__('gps_waypoint_navigator')
         
-        self.namespace = namespace
-        action_name = f'{namespace}/navigate_through_poses'
+        # resolve namespace from argument, env var, or default
+        default_ns = os.environ.get('ROBOT_NAMESPACE', 'a200_0000')
+        self.namespace = namespace if namespace else default_ns
+        action_name = f'{self.namespace}/navigate_through_poses'
         
         # Parâmetros GPS
         self.reference_lat = reference_lat
@@ -226,7 +228,7 @@ def main(args=None):
     try:
         # Parse argumentos
         yaml_file = sys.argv[1]
-        namespace = 'a200_0000'
+        namespace = os.environ.get('ROBOT_NAMESPACE', 'a200_0000')
         ref_lat = -30.0
         ref_lon = -51.0
         

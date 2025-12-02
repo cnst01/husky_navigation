@@ -4,6 +4,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import NavSatFix
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from tf_transformations import quaternion_from_euler
+import os
 
 
 class GpsToPose(Node):
@@ -12,7 +13,8 @@ class GpsToPose(Node):
         
         # Obter parâmetros
         self.declare_parameter('use_sim_time', True)
-        self.declare_parameter('namespace', 'a200_0000')
+        # namespace pode ser fornecido por parâmetro ROS ou pela variável de ambiente ROBOT_NAMESPACE
+        self.declare_parameter('namespace', os.environ.get('ROBOT_NAMESPACE', 'a200_0000'))
         self.declare_parameter('publish_initial_pose', True)
         self.declare_parameter('reference_latitude', -22.001)
         self.declare_parameter('reference_longitude', -47.001)

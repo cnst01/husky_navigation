@@ -6,12 +6,15 @@ from rclpy.node import Node
 from nav2_msgs.action import NavigateThroughPoses
 from geometry_msgs.msg import PoseStamped, Point, Quaternion
 import math
+import os
 
 
 class WaypointDemo(Node):
-    def __init__(self, namespace='a200_0000'):
+    def __init__(self, namespace=None):
         super().__init__('waypoint_demo')
-        self._action_client = ActionClient(self, NavigateThroughPoses, f'{namespace}/navigate_through_poses')
+        default_ns = os.environ.get('ROBOT_NAMESPACE', 'a200_0000')
+        ns = namespace if namespace else default_ns
+        self._action_client = ActionClient(self, NavigateThroughPoses, f'{ns}/navigate_through_poses')
 
     def run_square_demo(self, start_x=1.0, start_y=1.0, size=2.0):
         """Demo: navegação em quadrado"""
