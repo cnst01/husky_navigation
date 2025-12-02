@@ -2,6 +2,8 @@
 
 import rclpy
 import yaml
+import json
+import math
 from yasmin import State
 from yasmin.blackboard import Blackboard
 from yasmin_ros.basic_outcomes import SUCCEED, ABORT
@@ -77,6 +79,104 @@ class GetWaypointsState(State):
             
         except Exception as e:
             node.get_logger().error(f"❌ Erro ao carregar waypoints: {str(e)}")
+            return ABORT
+        finally:
+            node.destroy_node()
+
+
+class GetMissionState(State):
+    """Estado que carrega uma missão a partir de um arquivo JSON para o blackboard
+
+    Formato esperado (exemplo em `config/mission1.json`):
+    {
+      "arm": true,
+      "takeoff_altitude": -5.0,
+      "yaw": 0.0,
+      "waypoints": [ {"x":0.0, "y":0.0, "z":-5.0}, ... ],
+      "wp_hold_cycles": 50,
+      "auto_land": true,
+      "disarm_after_land": true
+    }
+    """
+
+    def __init__(self, filename: str = None):
+        super().__init__(outcomes=[SUCCEED, ABORT])
+        self.filename = filename
+
+    @staticmethod
+    def _yaw_to_quaternion(yaw: float):
+        # yaw around Z axis
+        half = yaw * 0.5
+        qz = math.sin(half)
+        qw = math.cos(half)
+        return (0.0, 0.0, qz, qw)
+
+    def execute(self, blackboard: Blackboard) -> str:
+        node = rclpy.create_node('get_mission_state')
+
+        try:
+            # permite sobrescrever o caminho via blackboard: blackboard.mission_file
+            if hasattr(blackboard, 'mission_file') and blackboard.mission_file:
+                mission_file = blackboard.mission_file
+            elif self.filename:
+                mission_file = self.filename
+            else:
+                package_share_dir = get_package_share_directory('husky_navigation')
+                mission_file = os.path.join(package_share_dir, 'config', 'mission1.json')
+
+            node.get_logger().info(f"Carregando missão de: {mission_file}")
+
+            if not os.path.exists(mission_file):
+                node.get_logger().error(f"Arquivo de missão não encontrado: {mission_file}")
+                return ABORT
+
+            with open(mission_file, 'r') as f:
+                mission = json.load(f)
+
+            # Validações básicas
+            if 'waypoints' not in mission or not isinstance(mission['waypoints'], list):
+                node.get_logger().error("Estrutura JSON inválida: falta 'waypoints' como lista")
+                return ABORT
+
+            # Converte waypoints em PoseStamped
+            waypoints = []
+            clock = rclpy.clock.Clock()
+            for i, wp in enumerate(mission['waypoints']):
+                pose = PoseStamped()
+                pose.header.frame_id = mission.get('frame_id', 'map')
+                pose.header.stamp = clock.now().to_msg()
+
+                # campos x,y,z esperados
+                pose.pose.position.x = float(wp.get('x', 0.0))
+                pose.pose.position.y = float(wp.get('y', 0.0))
+                pose.pose.position.z = float(wp.get('z', 0.0))
+
+                # Orientação: usa yaw global da missão se houver, caso contrário 0
+                yaw = float(mission.get('yaw', 0.0))
+                qx, qy, qz, qw = self._yaw_to_quaternion(yaw)
+                pose.pose.orientation.x = qx
+                pose.pose.orientation.y = qy
+                pose.pose.orientation.z = qz
+                pose.pose.orientation.w = qw
+
+                waypoints.append(pose)
+                node.get_logger().info(f"Waypoint {i+1}: ({pose.pose.position.x:.2f}, {pose.pose.position.y:.2f}, {pose.pose.position.z:.2f})")
+
+            # Preenche o blackboard com campos úteis
+            blackboard.mission = mission
+            blackboard.waypoints = waypoints
+            blackboard.arm = bool(mission.get('arm', False))
+            blackboard.takeoff_altitude = float(mission.get('takeoff_altitude', 0.0))
+            blackboard.yaw = float(mission.get('yaw', 0.0))
+            blackboard.wp_hold_cycles = int(mission.get('wp_hold_cycles', 0))
+            blackboard.auto_land = bool(mission.get('auto_land', False))
+            blackboard.disarm_after_land = bool(mission.get('disarm_after_land', False))
+
+            node.get_logger().info(f"✅ Missão carregada: {len(waypoints)} waypoints, arm={blackboard.arm}, takeoff_alt={blackboard.takeoff_altitude}")
+            return SUCCEED
+
+        except Exception as e:
+            node.get_logger().error(f"Erro ao carregar missão: {e}")
             return ABORT
         finally:
             node.destroy_node()

@@ -12,6 +12,7 @@ import os
 sys.path.append(os.path.dirname(__file__))
 
 from get_waypoints_state import GetWaypointsState
+from get_waypoints_state import GetMissionState
 from navigate_waypoints_state import NavigateWaypointsState
 
 class WaypointNavigationSM(StateMachine):
@@ -20,7 +21,8 @@ class WaypointNavigationSM(StateMachine):
     def __init__(self):
         super().__init__(outcomes=[SUCCEED, ABORT, CANCEL])
         
-        # Adiciona estados à máquina
+        # Adiciona estados à máquina (o estado de obtenção de waypoints
+        # pode ser substituído por GetMissionState externamente)
         self.add_state(
             "GET_WAYPOINTS",
             GetWaypointsState(),
@@ -42,6 +44,16 @@ class WaypointNavigationSM(StateMachine):
 
 def main():
     # Inicializa ROS sem argumentos para evitar conflito com parâmetros
+    # Detecta argumentos da linha de comando para selecionar modo de missão
+    use_mission = False
+    mission_file = None
+    for arg in sys.argv[1:]:
+        if arg == '--mission':
+            use_mission = True
+        elif arg.startswith('--mission-file='):
+            use_mission = True
+            mission_file = arg.split('=', 1)[1]
+
     rclpy.init(args=sys.argv)
     
     # Cria nó ROS 2 padrão
@@ -49,6 +61,12 @@ def main():
     
     # Cria e inicia a máquina de estados
     sm = WaypointNavigationSM()
+
+    # Se solicitado, substitui o estado GET_WAYPOINTS por GetMissionState
+    if use_mission:
+        node.get_logger().info(f"Modo missão ativado, usando arquivo: {mission_file or 'config/mission1.json'}")
+        get_mission_state = GetMissionState(filename=mission_file) if mission_file else GetMissionState()
+        sm.set_state("GET_WAYPOINTS", get_mission_state)
     
     # Publica FSM para visualização (opcional)
     try:
