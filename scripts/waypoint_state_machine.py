@@ -13,28 +13,34 @@ sys.path.append(os.path.dirname(__file__))
 
 from get_waypoints_state import GetWaypointsState
 from get_waypoints_state import GetMissionState
-from navigate_waypoints_state import NavigateWaypointsState
+from navigate_waypoints_sequential_state import NavigateWaypointsSequentialState
 
 class WaypointNavigationSM(StateMachine):
     """Máquina de estados para navegação por waypoints"""
     
-    def __init__(self):
+    def __init__(self, use_mission: bool = False, mission_file: str = None):
         super().__init__(outcomes=[SUCCEED, ABORT, CANCEL])
-        
-        # Adiciona estados à máquina (o estado de obtenção de waypoints
-        # pode ser substituído por GetMissionState externamente)
+
+        # Escolhe qual estado irá obter os waypoints: do YAML/arquivo padrão ou
+        # diretamente de um JSON de missão (GetMissionState)
+        if use_mission:
+            get_state = GetMissionState(filename=mission_file) if mission_file else GetMissionState()
+        else:
+            get_state = GetWaypointsState()
+
+        # Adiciona estados à máquina
         self.add_state(
             "GET_WAYPOINTS",
-            GetWaypointsState(),
+            get_state,
             transitions={
                 SUCCEED: "NAVIGATE_WAYPOINTS",
                 ABORT: ABORT
             }
         )
-        
+
         self.add_state(
             "NAVIGATE_WAYPOINTS",
-            NavigateWaypointsState(),
+            NavigateWaypointsSequentialState(),
             transitions={
                 SUCCEED: SUCCEED,
                 ABORT: ABORT,
@@ -59,14 +65,11 @@ def main():
     # Cria nó ROS 2 padrão
     node = Node("waypoint_navigation_sm")
     
-    # Cria e inicia a máquina de estados
-    sm = WaypointNavigationSM()
+    # Cria e inicia a máquina de estados, passando flags de missão ao construtor
+    sm = WaypointNavigationSM(use_mission=use_mission, mission_file=mission_file)
 
-    # Se solicitado, substitui o estado GET_WAYPOINTS por GetMissionState
     if use_mission:
         node.get_logger().info(f"Modo missão ativado, usando arquivo: {mission_file or 'config/mission1.json'}")
-        get_mission_state = GetMissionState(filename=mission_file) if mission_file else GetMissionState()
-        sm.set_state("GET_WAYPOINTS", get_mission_state)
     
     # Publica FSM para visualização (opcional)
     try:
